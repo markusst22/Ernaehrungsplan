@@ -45,10 +45,13 @@
   .meal{padding:12px 16px;display:flex;gap:12px;align-items:flex-start;cursor:pointer;transition:background .12s;position:relative}
   .meal + .meal{border-top:1px dashed var(--line)}
   .meal:active{background:var(--bg2)}
-  .meal .chev{position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--mint);font-size:18px}
+  .mactions{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:6px}
+  .meal-reroll{border:none;background:var(--green-soft);color:var(--green-d);width:30px;height:30px;border-radius:9px;font-size:14px;cursor:pointer;display:grid;place-items:center;transition:transform .25s,background .15s}
+  .meal-reroll:active{transform:rotate(180deg) scale(.9);background:var(--mint)}
+  .meal .chev{color:var(--mint);font-size:18px}
   .mtag{flex:0 0 auto;width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-size:17px;background:var(--green-soft)}
   .meal.dinner .mtag{background:#f1ecdf}
-  .mbody{flex:1;min-width:0;padding-right:16px}
+  .mbody{flex:1;min-width:0;padding-right:64px}
   .mkind{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
   .mname{font-weight:650;font-size:14.5px;margin:1px 0 4px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
   .fishbadge{font-size:10px;font-weight:700;letter-spacing:.04em;color:var(--fish);background:var(--fish-bg);border-radius:7px;padding:2px 7px;text-transform:uppercase}
@@ -131,8 +134,8 @@
   <section class="view on" id="viewPlan">
     <div class="week-meta" id="weekMeta"></div>
     <div id="planList"></div>
-    <p class="hint">2 Mahlzeiten/Tag · Ziel: <b>135 g Protein · ~30 g Fett · 1500 kcal</b>.<br>
-      Genau 2 Fischtage · kein Brot. Tippe auf eine Mahlzeit für ihre Makros.</p>
+    <p class="hint">2 Mahlzeiten/Tag · Ziel: <b>135 g Protein · ~30 g Fett · 1500 kcal</b> · genau 2 Fischtage · kein Brot.<br>
+      Tippe auf eine Mahlzeit für ihre Makros · ↻ neben einer Mahlzeit würfelt nur diese neu · ↻ oben rechts den ganzen Tag.</p>
   </section>
   <section class="view" id="viewShop">
     <div class="filterbar">
@@ -163,6 +166,7 @@ const ING = {
   harzer:{n:"Harzer Käse",cat:"milch",p:30,f:.7,c:0,pack:200,kmin:60,kmax:300},
   huettenkaese:{n:"Körniger Frischkäse",cat:"milch",p:13,f:5,c:3,pack:200},
   magermilch:{n:"Magermilch",cat:"milch",p:3.4,f:.5,c:5,pack:1000},
+  ei:{n:"Eier",cat:"milch",p:13,f:11,c:1.1,piece:55,pack:10},
   // Fisch & Meeresfrüchte
   lachs:{n:"Lachsfilet",cat:"fisch",p:20,f:13,c:0,pack:125},
   makrele:{n:"Makrelenfilet",cat:"fisch",p:20,f:16,c:0,pack:200},
@@ -173,6 +177,7 @@ const ING = {
   pute:{n:"Putenbrustfilet",cat:"fleisch",p:24,f:1,c:0,pack:400,kmin:80,kmax:420},
   rinderhack5:{n:"Rinderhack (5% Fett)",cat:"fleisch",p:21,f:5,c:0,pack:500,kmin:80,kmax:380},
   putenhack:{n:"Putenhackfleisch",cat:"fleisch",p:18,f:7,c:0,pack:500,kmin:80,kmax:380},
+  rindfleisch:{n:"Rindfleisch (mager, Hüfte/Streifen)",cat:"fleisch",p:21,f:4,c:0,pack:400,kmin:80,kmax:380},
   // Obst & Gemüse
   brokkoli:{n:"Brokkoli",cat:"gemuese",p:3,f:.4,c:7,pack:400},
   paprika:{n:"Paprika",cat:"gemuese",p:1,f:.3,c:6,piece:150},
@@ -230,14 +235,15 @@ const BREAKFASTS = [
   {id:"b4",n:"Hüttenkäse-Skyr-Bowl mit Beeren",items:[["skyr",200,"P"],["haferflocken",55,"C"],["huettenkaese",100,""],["beeren",100,""]]},
   {id:"b5",n:"Magerquark mit Beeren & Walnüssen",items:[["magerquark",250,"P"],["haferflocken",60,"C"],["beeren",120,""],["walnuss",10,""]]},
   {id:"b6",n:"Skyr-Bananen-Porridge",items:[["skyr",250,"P"],["haferflocken",60,"C"],["banane",100,""],["whey",15,""]]},
-  {id:"b7",n:"Protein-Müsli mit Magermilch",items:[["magerquark",250,"P"],["haferflocken",60,"C"],["magermilch",100,""],["beeren",80,""]]},
   {id:"b8",n:"Quark mit Granola & Banane",items:[["magerquark",250,"P"],["haferflocken",55,"C"],["granola",40,""],["banane",80,""]]},
-  {id:"b9",n:"Beeren-Protein-Bowl mit Chia",items:[["magerquark",250,"P"],["haferflocken",60,"C"],["beeren",150,""],["chia",5,""]]},
-  {id:"b10",n:"Apfel-Zimt-Quark mit Haferflocken",items:[["magerquark",250,"P"],["haferflocken",60,"C"],["apfel",150,""]]},
   {id:"b11",n:"Mango-Skyr-Bowl",items:[["skyr",250,"P"],["haferflocken",60,"C"],["mango",120,""],["leinsamen",10,""]]},
   {id:"b12",n:"Erdnuss-Bananen-Quark",items:[["magerquark",250,"P"],["haferflocken",55,"C"],["banane",100,""],["erdnussmus",15,""]]},
-  {id:"b13",n:"Skyr mit Apfel & Walnüssen",items:[["skyr",250,"P"],["haferflocken",60,"C"],["apfel",120,""],["walnuss",8,""]]},
   {id:"b14",n:"Quark-Quinoa-Frühstück mit Beeren",items:[["magerquark",250,"P"],["quinoa",60,"C"],["beeren",100,""]]},
+  {id:"e1",n:"Protein-Pancakes (Ei, Quark & Haferflocken)",egg:true,items:[["magerquark",200,"P"],["haferflocken",55,"C"],["ei",110,""],["beeren",80,""]]},
+  {id:"e2",n:"Rührei mit Skyr, Tomaten & Haferflocken",egg:true,items:[["skyr",200,"P"],["haferflocken",55,"C"],["ei",110,""],["tomaten",80,""]]},
+  {id:"e3",n:"Omelett mit Hüttenkäse & Quark-Haferflocken",egg:true,items:[["magerquark",200,"P"],["haferflocken",55,"C"],["ei",110,""],["huettenkaese",80,""]]},
+  {id:"e4",n:"Ei-Haferflocken-Bowl mit Skyr & Banane",egg:true,items:[["skyr",200,"P"],["haferflocken",55,"C"],["ei",110,""],["banane",80,""]]},
+  {id:"e5",n:"Rührei mit Spinat, Magerquark & Haferflocken",egg:true,items:[["magerquark",200,"P"],["haferflocken",55,"C"],["ei",110,""],["spinat",100,""]]},
 ];
 /* ---------- Abendessen (36, davon 10 Fisch) ---------- */
 const DINNERS = [
@@ -257,8 +263,12 @@ const DINNERS = [
   {id:"m16",n:"Puten-Couscous mit Paprika",items:[["pute",120,"P"],["couscous",80,"C"],["paprika",150,""],["zwiebel",40,""],["olivenoel",5,""]]},
   {id:"m17",n:"Puten-Gemüsecurry mit Reis",items:[["pute",120,"P"],["reis",90,"C"],["gemuesemix",200,""],["tomaten",80,""],["kokosmilch",30,""]]},
   {id:"m19",n:"Puten-Nudeln mit Spinat",items:[["pute",120,"P"],["nudeln",90,"C"],["spinat",150,""],["tomaten",80,""]]},
-  {id:"m20",n:"Hackfleisch-Bolognese mit Vollkornnudeln",items:[["rinderhack5",120,"P"],["nudeln",90,"C"],["tomaten",200,""],["zwiebel",40,""]]},
-  {id:"m21",n:"Chili con Carne mit Reis",items:[["rinderhack5",120,"P"],["reis",90,"C"],["kidneybohnen",100,""],["tomaten",150,""],["mais",60,""],["zwiebel",40,""]]},
+  {id:"m20",n:"Hackfleisch-Bolognese mit Vollkornnudeln",beef:true,items:[["rinderhack5",120,"P"],["nudeln",90,"C"],["tomaten",200,""],["zwiebel",40,""]]},
+  {id:"m21",n:"Chili con Carne mit Reis",beef:true,items:[["rinderhack5",120,"P"],["reis",90,"C"],["kidneybohnen",100,""],["tomaten",150,""],["mais",60,""],["zwiebel",40,""]]},
+  {id:"r1",n:"Rinder-Reispfanne mit Paprika & Zucchini",beef:true,items:[["rindfleisch",120,"P"],["reis",90,"C"],["paprika",120,""],["zucchini",120,""],["zwiebel",40,""],["olivenoel",5,""]]},
+  {id:"r2",n:"Rindergeschnetzeltes mit Vollkornnudeln & Champignons",beef:true,items:[["rindfleisch",120,"P"],["nudeln",90,"C"],["champignons",150,""],["zwiebel",40,""],["olivenoel",5,""]]},
+  {id:"r3",n:"Rindersteak mit Süßkartoffel & Brokkoli",beef:true,items:[["rindfleisch",120,"P"],["reis",90,"C"],["suesskartoffel",150,""],["brokkoli",150,""]]},
+  {id:"r4",n:"Rinder-Gemüse-Wok mit Reis",beef:true,items:[["rindfleisch",120,"P"],["reis",90,"C"],["gemuesemix",200,""],["paprika",80,""],["olivenoel",5,""]]},
   {id:"m24",n:"Putenhack-Reispfanne mit Brokkoli",items:[["putenhack",120,"P"],["reis",90,"C"],["brokkoli",150,""],["paprika",80,""]]},
   {id:"m26",n:"Herzhafte Quark-Reis-Bowl mit Gemüse",veg:true,items:[["magerquark",150,"P"],["reis",90,"C"],["gemuesemix",200,""],["paprika",80,""]]},
   {id:"m27",n:"Soja-Bolognese mit Vollkornnudeln",veg:true,items:[["sojaschnetzel",80,"P"],["nudeln",90,"C"],["tomaten",200,""],["zwiebel",40,""]]},
@@ -281,8 +291,13 @@ const DINNERS = [
 const ALL = BREAKFASTS.concat(DINNERS);
 const mealById = id => ALL.find(m=>m.id===id);
 const FISH_DINNERS   = DINNERS.filter(m=>m.fish);
-const NOFISH_DINNERS = DINNERS.filter(m=>!m.fish);
-const FISH_DAYS_PER_WEEK = 2;
+const BEEF_DINNERS   = DINNERS.filter(m=>m.beef);
+const PLAIN_DINNERS  = DINNERS.filter(m=>!m.fish && !m.beef);
+const QUARK_BREAKFASTS = BREAKFASTS.filter(b=>!b.egg);
+const EGG_BREAKFASTS   = BREAKFASTS.filter(b=>b.egg);
+const FISH_DAYS_PER_WEEK = 2;   // genau 2 Fischtage
+const BEEF_DAYS_PER_WEEK = 1;   // genau 1 Rindfleischtag
+const EGG_DAYS_PER_WEEK  = 2;   // ~1/3 der Tage Ei-Frühstück (2:1 zu Quark/Skyr)
 const DAY_P=135, DAY_KCAL=1500, DINNER_SHARE=.55;
 const WD = ["Montag","Dienstag","Mittwoch","Donnerstag","Freitag","Samstag","Sonntag"];
 
@@ -311,11 +326,13 @@ function buildDay(bM, dM){
   return {b:bM.id, d:dM.id, ba, da, macros:macrosOf(mergeAmt(ba,da))};
 }
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function genDay(fishFlag){
+// eggFlag: Ei-Frühstück?  dType: "fish" | "beef" | "plain"
+function genDay(eggFlag, dType){
+  const bpool = eggFlag ? EGG_BREAKFASTS : QUARK_BREAKFASTS;
+  const dpool = dType==="fish" ? FISH_DINNERS : dType==="beef" ? BEEF_DINNERS : PLAIN_DINNERS;
   let best=null,bestErr=1e9;
   for(let t=0;t<30;t++){
-    const bM=pick(BREAKFASTS);
-    const dM=fishFlag?pick(FISH_DINNERS):pick(NOFISH_DINNERS);
+    const bM=pick(bpool); const dM=pick(dpool);
     const day=buildDay(bM,dM); const m=day.macros;
     if(Math.abs(m.p-DAY_P)<6 && Math.abs(m.kcal-DAY_KCAL)<110 && m.f>=24 && m.f<=34) return day;
     const e=Math.abs(m.f-29)+Math.abs(m.p-DAY_P)*2+Math.abs(m.kcal-DAY_KCAL)/30;
@@ -324,23 +341,38 @@ function genDay(fishFlag){
   return best;
 }
 function dayIsFish(day){return !!mealById(day.d).fish;}
+function dayIsBeef(day){return !!mealById(day.d).beef;}
+function dayIsEgg(day){return !!mealById(day.b).egg;}
+function dayType(day){return dayIsFish(day)?"fish":dayIsBeef(day)?"beef":"plain";}
 function fishCount(week){return week.filter(dayIsFish).length;}
+function beefCount(week){return week.filter(dayIsBeef).length;}
+function eggCount(week){return week.filter(dayIsEgg).length;}
 function genWeek(){
-  const idx=[0,1,2,3,4,5,6];
-  for(let i=6;i>0;i--){const j=Math.floor(Math.random()*(i+1));[idx[i],idx[j]]=[idx[j],idx[i]];}
-  const fishSet=new Set(idx.slice(0,FISH_DAYS_PER_WEEK));
-  const week=[]; for(let i=0;i<7;i++) week.push(genDay(fishSet.has(i)));
+  // 1 Rindtag, 2 Fischtage, Rest normal; 2 Ei-Frühstücke (nie am Rindtag -> Fett-Budget)
+  const all=[0,1,2,3,4,5,6];
+  const beefDay=Math.floor(Math.random()*7);
+  const rest=all.filter(i=>i!==beefDay);
+  for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
+  const fishSet=new Set(rest.slice(0,FISH_DAYS_PER_WEEK));
+  const nonBeef=all.filter(i=>i!==beefDay);
+  for(let i=nonBeef.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[nonBeef[i],nonBeef[j]]=[nonBeef[j],nonBeef[i]];}
+  const eggSet=new Set(nonBeef.slice(0,EGG_DAYS_PER_WEEK));
+  const week=[];
+  for(let i=0;i<7;i++){
+    const dType = i===beefDay ? "beef" : fishSet.has(i) ? "fish" : "plain";
+    week.push(genDay(eggSet.has(i), dType));
+  }
   return week;
 }
 
 let state = load() || {week:genWeek(), days:[0,1,2,3,4,5,6], checks:{}};
 if(!Array.isArray(state.week) || state.week.length!==7 ||
    state.week.some(x=>!x||!mealById(x.b)||!mealById(x.d)) ||
-   fishCount(state.week)!==FISH_DAYS_PER_WEEK){
+   fishCount(state.week)!==FISH_DAYS_PER_WEEK || beefCount(state.week)!==BEEF_DAYS_PER_WEEK || eggCount(state.week)!==EGG_DAYS_PER_WEEK){
   state.week=genWeek(); state.checks={};
 }
-function load(){try{const s=localStorage.getItem("mahlzeit_green_v1");return s?JSON.parse(s):null;}catch(e){return null;}}
-function save(){try{localStorage.setItem("mahlzeit_green_v1",JSON.stringify(state));}catch(e){}}
+function load(){try{const s=localStorage.getItem("mahlzeit_green_v2");return s?JSON.parse(s):null;}catch(e){return null;}}
+function save(){try{localStorage.setItem("mahlzeit_green_v2",JSON.stringify(state));}catch(e){}}
 save(); // beim ersten Laden sofort sichern -> Plan bleibt beim Neuladen gleich
 
 function ingLine(amounts){
@@ -360,7 +392,29 @@ function mealRow(i,key,kind,icon,cls,name,amounts,badge){
   return `<div class="meal ${cls}" data-day="${i}" data-key="${key}">
     <div class="mtag">${icon}</div>
     <div class="mbody"><div class="mkind">${kind}</div><div class="mname">${name} ${badge}</div>
-      <div class="ings">${ingLine(amounts)}</div></div><span class="chev">›</span></div>`;
+      <div class="ings">${ingLine(amounts)}</div></div>
+    <div class="mactions">
+      <button class="meal-reroll" data-day="${i}" data-key="${key}" title="Nur diese Mahlzeit neu würfeln">↻</button>
+      <span class="chev">›</span>
+    </div></div>`;
+}
+// Nur eine Mahlzeit neu würfeln; Tagestyp (Ei/Quark, Fisch/Rind/sonst) bleibt erhalten,
+// Tagesmakros werden neu austariert. key: "ba" (Frühstück) oder "da" (Abendessen).
+function rerollMeal(i,key){
+  const day=state.week[i];
+  const curB=mealById(day.b), curD=mealById(day.d);
+  const bPool=(dayIsEgg(day)?EGG_BREAKFASTS:QUARK_BREAKFASTS).filter(x=>x.id!==day.b);
+  const dPool=(dayType(day)==="fish"?FISH_DINNERS:dayType(day)==="beef"?BEEF_DINNERS:PLAIN_DINNERS).filter(x=>x.id!==day.d);
+  let best=null,bestErr=1e9;
+  for(let t=0;t<40;t++){
+    const nb = key==="ba" ? (bPool.length?pick(bPool):curB) : curB;
+    const nd = key==="da" ? (dPool.length?pick(dPool):curD) : curD;
+    const nday=buildDay(nb,nd); const m=nday.macros;
+    if(Math.abs(m.p-DAY_P)<6 && Math.abs(m.kcal-DAY_KCAL)<110 && m.f>=24 && m.f<=34){best=nday;break;}
+    const e=Math.abs(m.f-29)+Math.abs(m.p-DAY_P)*2+Math.abs(m.kcal-DAY_KCAL)/30;
+    if(e<bestErr){bestErr=e;best=nday;}
+  }
+  if(best){state.week[i]=best;state.checks={};save();renderPlan();renderMeta();renderShop();updateBadge();}
 }
 function renderPlan(){
   const list=document.getElementById("planList");
@@ -368,7 +422,7 @@ function renderPlan(){
     const b=mealById(day.b), d=mealById(day.d), m=day.macros;
     return `<div class="day">
       <div class="day-head"><div class="dl"><span class="dname">${WD[i]}</span><span class="ddate">Tag ${i+1}</span></div>
-        <button class="reroll" data-day="${i}" title="Tag neu würfeln">↻</button></div>
+        <button class="reroll" data-day="${i}" title="Ganzen Tag neu würfeln">↻</button></div>
       ${mealRow(i,"ba","Frühstück","🌅","breakfast",b.n,day.ba,"")}
       ${mealRow(i,"da","Abendessen","🌙","dinner",d.n,day.da,fishBadge(d))}
       <div class="macros">
@@ -380,7 +434,8 @@ function renderPlan(){
       </div></div>`;
   }).join("");
   list.querySelectorAll(".reroll").forEach(btn=>{btn.onclick=(e)=>{e.stopPropagation();const i=+btn.dataset.day;
-    state.week[i]=genDay(dayIsFish(state.week[i]));state.checks={};save();renderPlan();renderMeta();renderShop();updateBadge();};});
+    state.week[i]=genDay(dayIsEgg(state.week[i]), dayType(state.week[i]));state.checks={};save();renderPlan();renderMeta();renderShop();updateBadge();};});
+  list.querySelectorAll(".meal-reroll").forEach(btn=>{btn.onclick=(e)=>{e.stopPropagation();rerollMeal(+btn.dataset.day, btn.dataset.key);};});
   list.querySelectorAll(".meal").forEach(el=>{el.onclick=()=>{const day=state.week[+el.dataset.day],key=el.dataset.key;
     const amounts=day[key];const kind=key==="ba"?"Frühstück":"Abendessen";const meal=key==="ba"?mealById(day.b):mealById(day.d);
     openMeal(kind,meal,amounts);};});
